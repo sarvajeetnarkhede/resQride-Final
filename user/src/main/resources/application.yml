@@ -1,0 +1,42 @@
+server:
+  port: 8082
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: user-service
+  security:
+    user:
+      name: disabled
+      password: disabled
+
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/ride_user?createDatabaseIfNotExist=true
+    username: root
+    password: root123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+
+

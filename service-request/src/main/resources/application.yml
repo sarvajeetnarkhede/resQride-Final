@@ -1,0 +1,29 @@
+server:
+  port: 8083
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: SERVICE-REQUEST-SERVICE
+
+  security:
+    user:
+      name: disabled
+      password: disabled
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/service_request_db
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

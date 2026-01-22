@@ -1,0 +1,29 @@
+.idea
+logs
+
+# Log files~
+*.log
+*.log.*
+
+# Build hash files
+git rm --cached **/.build-hash
+git rm --cached **/.build-hash.*
+
+# Local development environment files
+.env
+.env.local
+
+# Build directories
+**/target/
+**/build/
+**/out/
+
+# IDE specific files
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# System Files
+.DS_Store
+Thumbs.db
