@@ -28,6 +28,32 @@ spring:
               predicates:
                 - Path=/api/requests/**
 
+            - id: MECHANIC-SERVICE
+              uri: lb://MECHANIC-SERVICE
+              predicates:
+                - Path=/api/mechanics/**
+
+            - id: ADMIN-SERVICE
+              uri: lb://ADMIN-SERVICE
+              predicates:
+                - Path=/api/admin/**
+
+            - id: FEEDBACK-SERVICE
+              uri: lb://FEEDBACK-SERVICE
+              predicates:
+                - Path=/api/feedback/**
+
+            - id: LOCATION-SERVICE
+              uri: lb://LOCATION-SERVICE
+              predicates:
+                - Path=/api/location/**
+
+            - id: PAYMENT-SERVICE
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/**
+
+
           default-filters:
             PreserveHostHeader
           metrics:
@@ -51,7 +77,7 @@ jwt:
 
 management:
   tracing:
-    enabled: true
+    enabled: false
     sampling:
       probability: 1.0
 

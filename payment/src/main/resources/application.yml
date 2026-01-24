@@ -1,5 +1,5 @@
 server:
-  port: 8086
+  port: 8088
 
 spring:
   application:
@@ -11,9 +11,9 @@ spring:
       password: disabled
 
   datasource:
-    url: jdbc:mysql://localhost:3306/payment_db
+    url: jdbc:mysql://localhost:3306/payment_db?createDatabaseIfNotExist=true
     username: root
-    password: root
+    password: root123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

@@ -23,11 +23,25 @@ public class JwtAuthFilter implements GlobalFilter {
 
     private boolean isPublic(String path, HttpMethod method) {
         if (path.startsWith("/api/auth")) return true;
+        
+        // Explicitly require authentication for /api/location/me
+        if (path.equals("/api/location/me") || path.equals("/api/location/me/")) {
+            return false;
+        }
 
         // Only allow GET requests to the base list and categories to be public.
-        // /api/requests/me MUST be authenticated.
         boolean isPublicGet = method == HttpMethod.GET &&
-                (path.equals("/api/requests") || path.equals("/api/requests/") || path.startsWith("/api/categories"));
+                (path.equals("/api/requests")
+                        || path.equals("/api/requests/")
+                        || path.startsWith("/api/mechanics/")
+                        || path.startsWith("/api/mechanics")
+                        || path.startsWith("/api/feedback/")
+                        || path.startsWith("/api/feedback")
+                        || path.startsWith("/api/location/")
+                        || path.equals("/api/location")
+                        || path.startsWith("/api/payments/")
+                        || path.equals("/api/payments")
+                );
         
         return isPublicGet;
     }

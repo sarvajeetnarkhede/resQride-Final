@@ -5,6 +5,7 @@ import com.ride.servicerequest.service.ServiceRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -67,5 +68,13 @@ public class ServiceRequestController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving requests", e);
         }
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ServiceRequestResponseDTO> getAllRequests(Authentication auth) {
+        log.info("Admin fetching all service requests");
+        return service.getAllRequests();
+    }
+
 
 }

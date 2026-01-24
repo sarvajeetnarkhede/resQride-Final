@@ -56,6 +56,14 @@ public class ServiceRequestService {
                 .toList();
     }
 
+    // GET ALL REQUESTS (ADMIN ONLY)
+    public List<ServiceRequestResponseDTO> getAllRequests() {
+        return repository.findAll()
+                .stream()
+                .map(this::map)
+                .toList();
+    }
+
     private ServiceRequestResponseDTO map(ServiceRequest r) {
         return ServiceRequestResponseDTO.builder()
                 .requestId(r.getId())
@@ -64,6 +72,8 @@ public class ServiceRequestService {
                 .amount(r.getAmount())
                 .paid(r.isPaid())
                 .status(r.getStatus())
+                .userEmail(r.getUserEmail())  // Include user email in the response
+                .createdAt(r.getCreatedAt())  // Include creation timestamp
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.ride.admin.controller;
 
 import lombok.RequiredArgsConstructor;
 import com.ride.admin.client.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +14,7 @@ public class AdminController {
     private final MechanicClient mechanicClient;
     private final FeedbackClient feedbackClient;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/requests")
     public Object allRequests() {
         return requestClient.allRequests();
