@@ -24,6 +24,7 @@ public class ServiceRequest {
 
     // assigned later by admin
     private String mechanicEmail;
+    private Long mechanicId;
 
     private String location;
 

@@ -9,4 +9,5 @@ public interface ServiceRequestRepository
         extends JpaRepository<ServiceRequest, Long> {
 
     List<ServiceRequest> findByUserEmail(String userEmail);
+    List<ServiceRequest> findByMechanicId(Long mechanicId);
 }

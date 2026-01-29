@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
@@ -57,6 +58,24 @@ public class AuthController {
         return userServiceClient.createUser(request)
                 .doOnNext(user ->
                         authEventPublisher.userRegistered(user.getEmail())
-                );
+                )
+                .onErrorResume(WebClientResponseException.class, e -> {
+                    if (e.getStatusCode() == HttpStatus.CONFLICT) {
+                        return Mono.error(new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "User with this email already exists. Please use a different email or try logging in."
+                        ));
+                    }
+                    return Mono.error(e);
+                })
+                .onErrorResume(ResponseStatusException.class, e -> {
+                    return Mono.error(e);
+                })
+                .onErrorResume(e -> {
+                    return Mono.error(new ResponseStatusException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Registration failed: " + e.getMessage()
+                    ));
+                });
     }
 }

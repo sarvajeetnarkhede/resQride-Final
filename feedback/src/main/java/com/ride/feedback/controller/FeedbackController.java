@@ -21,6 +21,14 @@ public class FeedbackController {
         return service.create(auth.getName(), dto);
     }
 
+    @PutMapping
+    public Object update(
+            Authentication auth,
+            @RequestBody FeedbackCreateDTO dto
+    ) {
+        return service.update(auth.getName(), dto);
+    }
+
     @GetMapping("/mechanic/{id}")
     public Object byMechanic(@PathVariable Long id) {
         return service.byMechanic(id);

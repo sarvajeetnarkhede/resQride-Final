@@ -6,6 +6,7 @@ import com.ride.mechanic.service.MechanicService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -17,8 +18,8 @@ public class MechanicController {
     private final MechanicService service;
 
     @PostMapping("/register")
-    @PreAuthorize("hasRole('ADMIN')")
-    public MechanicResponseDTO register(@RequestBody MechanicCreateDTO dto) {
+
+    public Mono<MechanicResponseDTO> register(@RequestBody MechanicCreateDTO dto) {
         return service.register(dto);
     }
 
@@ -40,5 +41,11 @@ public class MechanicController {
     @GetMapping("/available")
     public List<MechanicResponseDTO> available() {
         return service.available();
+    }
+
+    @GetMapping("/my-requests")
+    @PreAuthorize("hasRole('MECHANIC')")
+    public List<Object> getMyRequests(Authentication auth) {
+        return service.getMyRequests(auth.getName());
     }
 }

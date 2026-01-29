@@ -48,7 +48,18 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setPhoneNo(request.getPhoneNo());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.CUSTOMER);
+        
+        // Set role from request or default to CUSTOMER
+        if (request.getRole() != null && !request.getRole().isEmpty()) {
+            try {
+                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                user.setRole(Role.CUSTOMER); // Default if invalid role
+            }
+        } else {
+            user.setRole(Role.CUSTOMER); // Default if no role specified
+        }
+        
         return mapToResponse(userRepository.save(user));
     }
 

@@ -14,17 +14,19 @@ public class AdminController {
     private final MechanicClient mechanicClient;
     private final FeedbackClient feedbackClient;
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @GetMapping("/requests")
     public Object allRequests() {
         return requestClient.allRequests();
     }
+
 
     @GetMapping("/mechanics/available")
     public Object availableMechanics() {
         return mechanicClient.available();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/assign")
     public void assign(
             @RequestParam Long requestId,
@@ -33,10 +35,12 @@ public class AdminController {
         requestClient.assignMechanic(requestId, mechanicId);
     }
 
+
     @PatchMapping("/mechanics/{id}/verify")
     public void verify(@PathVariable Long id) {
         mechanicClient.verify(id);
     }
+
 
     @GetMapping("/feedback/mechanic/{id}")
     public Object feedback(@PathVariable Long id) {

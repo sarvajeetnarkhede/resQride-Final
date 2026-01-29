@@ -64,6 +64,33 @@ public class ServiceRequestService {
                 .toList();
     }
 
+    // ASSIGN MECHANIC (ADMIN ONLY)
+    public void assignMechanic(Long requestId, Long mechanicId) {
+        ServiceRequest request = repository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Service request not found"));
+
+        request.setMechanicId(mechanicId);
+        request.setStatus(ServiceStatus.ASSIGNED);
+        repository.save(request);
+    }
+
+    // GET REQUESTS BY MECHANIC
+    public List<ServiceRequestResponseDTO> getRequestsByMechanic(Long mechanicId) {
+        return repository.findByMechanicId(mechanicId)
+                .stream()
+                .map(this::map)
+                .toList();
+    }
+
+    // UPDATE STATUS (MECHANIC ONLY)
+    public void updateStatus(Long requestId, ServiceStatus status) {
+        ServiceRequest request = repository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Service request not found"));
+
+        request.setStatus(status);
+        repository.save(request);
+    }
+
     private ServiceRequestResponseDTO map(ServiceRequest r) {
         return ServiceRequestResponseDTO.builder()
                 .requestId(r.getId())
@@ -74,6 +101,7 @@ public class ServiceRequestService {
                 .status(r.getStatus())
                 .userEmail(r.getUserEmail())  // Include user email in the response
                 .createdAt(r.getCreatedAt())  // Include creation timestamp
+                .mechanicId(r.getMechanicId()) // Include assigned mechanic ID
                 .build();
     }
 }

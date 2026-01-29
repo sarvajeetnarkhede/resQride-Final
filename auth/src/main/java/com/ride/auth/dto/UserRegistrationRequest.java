@@ -8,4 +8,5 @@ public class UserRegistrationRequest {
     private String email;
     private String phoneNo;
     private String password;
+    private String role; // Fixed capitalization
 }

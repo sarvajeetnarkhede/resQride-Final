@@ -17,4 +17,5 @@ public class ServiceRequestResponseDTO {
     private String userEmail;
     private LocalDateTime createdAt;
     private ServiceStatus status;
+    private Long mechanicId;
 }

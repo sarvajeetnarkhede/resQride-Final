@@ -4,6 +4,7 @@ import com.ride.feedback.model.Feedback;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FeedbackRepository
         extends MongoRepository<Feedback, String> {
@@ -13,4 +14,6 @@ public interface FeedbackRepository
     List<Feedback> findByRequestId(Long requestId);
 
     boolean existsByRequestIdAndUserEmail(Long requestId, String userEmail);
+    
+    Optional<Feedback> findByRequestIdAndUserEmail(Long requestId, String userEmail);
 }

@@ -8,4 +8,5 @@ public class MechanicCreateDTO {
     private String name;
     private String phone;
     private String skillType;
+    private String password;
 }

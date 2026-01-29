@@ -8,4 +8,5 @@ public class UserCreateRequest {
     private String email;
     private String phoneNo;
     private String password;
+    private String role; // Add role field
 }

@@ -70,10 +70,36 @@ public class ServiceRequestController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public List<ServiceRequestResponseDTO> getAllRequests(Authentication auth) {
         log.info("Admin fetching all service requests");
         return service.getAllRequests();
+    }
+
+    @PatchMapping("/{id}/assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void assignMechanic(
+            @PathVariable Long id,
+            @RequestParam Long mechanicId
+    ) {
+        log.info("Assigning mechanic {} to request {}", mechanicId, id);
+        service.assignMechanic(id, mechanicId);
+    }
+
+    @GetMapping("/mechanic/{mechanicId}")
+    @PreAuthorize("hasRole('MECHANIC')")
+    public List<ServiceRequestResponseDTO> getMechanicRequests(@PathVariable Long mechanicId) {
+        log.info("Fetching requests for mechanic {}", mechanicId);
+        return service.getRequestsByMechanic(mechanicId);
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('MECHANIC')")
+    public void updateStatus(
+            @PathVariable Long id,
+            @RequestParam ServiceStatus status
+    ) {
+        log.info("Updating status of request {} to {}", id, status);
+        service.updateStatus(id, status);
     }
 
 

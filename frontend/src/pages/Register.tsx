@@ -9,6 +9,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Car, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -38,16 +39,19 @@ export const Register: React.FC = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      // Mock registration
-      console.log('Register data:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await axios.post('http://localhost:8080/api/auth/register', {
+        fullName: data.name,
+        email: data.email,
+        phoneNo: '1234567890', // Default phone number for now
+        password: data.password
+      });
       
-      login({ name: data.name, email: data.email, role: data.role });
+      login({ name: data.name, email: data.email, role: 'CUSTOMER' });
       toast.success('Account created successfully!');
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration failed:', error);
-      toast.error('Registration failed. Please try again.');
+      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
