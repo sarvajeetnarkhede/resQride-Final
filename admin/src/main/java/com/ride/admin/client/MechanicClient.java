@@ -21,6 +21,15 @@ public class MechanicClient {
                 .block();
     }
 
+    public Object allMechanics() {
+        return webClient.build()
+                .get()
+                .uri(SERVICE + "/api/mechanics/all")
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
+    }
+
     public void verify(Long mechanicId) {
         webClient.build()
                 .patch()

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import com.ride.feedback.dto.*;
 import com.ride.feedback.model.Feedback;
 import com.ride.feedback.repository.FeedbackRepository;
+import com.ride.feedback.client.MechanicClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.List;
 public class FeedbackService {
 
     private final FeedbackRepository repository;
+    private final MechanicClient mechanicClient;
 
     public FeedbackResponseDTO create(String email, FeedbackCreateDTO dto) {
 
@@ -33,7 +35,12 @@ public class FeedbackService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        return map(repository.save(feedback));
+        FeedbackResponseDTO response = map(repository.save(feedback));
+        
+        // Update mechanic's average rating
+        updateMechanicRating(dto.getMechanicId());
+        
+        return response;
     }
 
     public FeedbackResponseDTO update(String email, FeedbackCreateDTO dto) {
@@ -44,7 +51,12 @@ public class FeedbackService {
         feedback.setComment(dto.getComment());
         feedback.setCreatedAt(LocalDateTime.now()); // Update timestamp
 
-        return map(repository.save(feedback));
+        FeedbackResponseDTO response = map(repository.save(feedback));
+        
+        // Update mechanic's average rating
+        updateMechanicRating(dto.getMechanicId());
+        
+        return response;
     }
 
     public List<FeedbackResponseDTO> byMechanic(Long mechanicId) {
@@ -59,6 +71,31 @@ public class FeedbackService {
                 .stream()
                 .map(this::map)
                 .toList();
+    }
+
+    public Double getAverageRatingForMechanic(Long mechanicId) {
+        List<Feedback> feedbacks = repository.findByMechanicId(mechanicId);
+        
+        if (feedbacks.isEmpty()) {
+            return 0.0; // No feedback yet
+        }
+        
+        double average = feedbacks.stream()
+                .mapToInt(Feedback::getRating)
+                .average()
+                .orElse(0.0);
+        
+        // Round to 2 decimal places
+        return Math.round(average * 100.0) / 100.0;
+    }
+
+    private void updateMechanicRating(Long mechanicId) {
+        try {
+            Double newAverageRating = getAverageRatingForMechanic(mechanicId);
+            mechanicClient.updateMechanicRating(mechanicId, newAverageRating).block();
+        } catch (Exception e) {
+            System.err.println("Failed to update mechanic rating for ID " + mechanicId + ": " + e.getMessage());
+        }
     }
 
     private FeedbackResponseDTO map(Feedback f) {

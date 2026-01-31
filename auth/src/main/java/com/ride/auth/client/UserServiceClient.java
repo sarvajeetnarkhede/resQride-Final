@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 public class UserServiceClient {
 
     private final WebClient.Builder webClientBuilder;
-    private static final String USER_SERVICE = "http://USER-SERVICE";
+    private static final String USER_SERVICE = "http://USER-SERVICE";  // Back to service discovery
 
     public Mono<InternalUserAuthResponse> getUserForAuth(String email) {
         return webClientBuilder.build()

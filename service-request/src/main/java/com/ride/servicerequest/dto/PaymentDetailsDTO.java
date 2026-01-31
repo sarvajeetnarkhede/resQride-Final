@@ -2,21 +2,20 @@ package com.ride.servicerequest.dto;
 
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-public class ServiceRequestResponseDTO {
-
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentDetailsDTO {
+    
     private Long requestId;
     private String problemType;
     private String location;
     private Double amount;
-    private boolean paid;
-    private String userEmail;
-    private LocalDateTime createdAt;
-    private ServiceStatus status;
-    private Long mechanicId;
     private String mechanicName;
+    private String status;
+    private String message;
 }

@@ -43,9 +43,46 @@ public class MechanicController {
         return service.available();
     }
 
+    @GetMapping("/all")
+    public List<MechanicResponseDTO> getAllMechanics() {
+        return service.getAllMechanics();
+    }
+
     @GetMapping("/my-requests")
     @PreAuthorize("hasRole('MECHANIC')")
     public List<Object> getMyRequests(Authentication auth) {
         return service.getMyRequests(auth.getName());
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('MECHANIC')")
+    public MechanicResponseDTO getMyProfile(Authentication auth) {
+        return service.getMechanicByEmail(auth.getName());
+    }
+
+    @GetMapping("/{id}/name")
+    public String getMechanicName(@PathVariable Long id) {
+        return service.getMechanicName(id);
+    }
+
+
+    @GetMapping("/{id}/email")
+    public String getMechanicEmail(@PathVariable Long id) {
+        return service.getMechanicEmail(id);
+    }
+
+    @PatchMapping("/{id}/rating")
+    public void updateRating(@PathVariable Long id, @RequestBody Double newRating) {
+        service.updateRating(id, newRating);
+    }
+
+    @PatchMapping("/{id}/availability")
+    public void updateAvailability(@PathVariable Long id, @RequestParam AvailabilityStatus status) {
+        service.updateAvailabilityById(id, status);
+    }
+
+    @GetMapping("/{id}/details")
+    public MechanicResponseDTO getMechanicDetails(@PathVariable Long id) {
+        return service.getMechanicById(id);
     }
 }

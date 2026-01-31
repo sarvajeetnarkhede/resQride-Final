@@ -6,6 +6,7 @@ import com.ride.mechanic.entity.Mechanic;
 import com.ride.mechanic.repository.MechanicRepository;
 import com.ride.mechanic.client.ServiceRequestClient;
 import com.ride.mechanic.client.UserServiceClient;
+import com.ride.mechanic.client.FeedbackClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +19,7 @@ public class MechanicService {
     private final MechanicRepository repository;
     private final ServiceRequestClient serviceRequestClient;
     private final UserServiceClient userServiceClient;
+    private final FeedbackClient feedbackClient;
 
     public Mono<MechanicResponseDTO> register(MechanicCreateDTO dto) {
 
@@ -70,6 +72,13 @@ public class MechanicService {
                 .toList();
     }
 
+    public List<MechanicResponseDTO> getAllMechanics() {
+        return repository.findAll()
+                .stream()
+                .map(this::map)
+                .toList();
+    }
+
     public List<Object> getMyRequests(String email) {
         try {
             System.out.println("Getting requests for mechanic email: " + email);
@@ -87,14 +96,64 @@ public class MechanicService {
         }
     }
 
+    public String getMechanicName(Long id) {
+        return repository.findById(id)
+                .map(Mechanic::getName)
+                .orElse("Unknown Mechanic");
+    }
+
+    public String getMechanicEmail(Long id) {
+        return repository.findById(id)
+                .map(Mechanic::getEmail)
+                .orElse("unknown@example.com");
+    }
+
+    public MechanicResponseDTO getMechanicByEmail(String email) {
+        Mechanic mechanic = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Mechanic not found with email: " + email));
+        return map(mechanic);
+    }
+
+    public void updateRating(Long id, Double newRating) {
+        Mechanic mechanic = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Mechanic not found with ID: " + id));
+        
+        mechanic.setRating(newRating);
+        repository.save(mechanic);
+    }
+
+    public void updateAvailabilityById(Long id, AvailabilityStatus status) {
+        Mechanic mechanic = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Mechanic not found with ID: " + id));
+        
+        mechanic.setAvailability(status);
+        repository.save(mechanic);
+    }
+
+    public MechanicResponseDTO getMechanicById(Long id) {
+        Mechanic mechanic = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Mechanic not found with ID: " + id));
+        return map(mechanic);
+    }
+
     private MechanicResponseDTO map(Mechanic m) {
+        Double overallRating = 0.0;
+        
+        try {
+            // Fetch overall rating from feedback service
+            overallRating = feedbackClient.getAverageRating(m.getId()).block();
+        } catch (Exception e) {
+            // Fallback to existing rating if feedback service is unavailable
+            overallRating = m.getRating();
+        }
+
         return MechanicResponseDTO.builder()
                 .id(m.getId())
                 .email(m.getEmail())
                 .name(m.getName())
                 .phone(m.getPhone())
                 .skillType(m.getSkillType())
-                .rating(m.getRating())
+                .rating(overallRating) // Use overall rating from feedback service
                 .availability(m.getAvailability())
                 .verified(m.isVerified())
                 .build();

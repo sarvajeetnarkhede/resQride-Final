@@ -2,6 +2,7 @@ package com.ride.servicerequest.controller;
 
 import com.ride.servicerequest.dto.*;
 import com.ride.servicerequest.service.ServiceRequestService;
+import com.ride.servicerequest.service.ReceiptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.List;
 public class ServiceRequestController {
 
     private final ServiceRequestService service;
+    private final ReceiptService receiptService;
 
     @PostMapping
     public ServiceRequestResponseDTO create(
@@ -93,13 +95,62 @@ public class ServiceRequestController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('MECHANIC')")
-    public void updateStatus(
+    public ServiceRequestResponseDTO updateStatus(
             @PathVariable Long id,
             @RequestParam ServiceStatus status
     ) {
-        log.info("Updating status of request {} to {}", id, status);
-        service.updateStatus(id, status);
+        return service.updateStatus(id, status);
+    }
+
+    // 2. Endpoint to check payment status (used by Dashboard)
+    @GetMapping("/{id}/payment-status")
+    public java.util.Map<String, Object> getPaymentStatus(@PathVariable Long id) {
+        return service.getPaymentStatus(id);
+    }
+
+    @PatchMapping("/{id}/pay")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public PaymentReceiptDTO makePayment(
+            @PathVariable Long id,
+            Authentication auth
+    ) {
+        log.info("User {} making payment for request {}", auth.getName(), id);
+        service.makePayment(id, auth.getName());
+        
+        // Generate and return receipt after successful payment
+        log.info("Generating receipt for completed payment of request {}", id);
+        return receiptService.generateReceipt(id, auth.getName());
+    }
+
+    @GetMapping("/{id}/payment-details")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public Object getPaymentDetails(
+            @PathVariable Long id,
+            Authentication auth
+    ) {
+        log.info("User {} fetching payment details for request {}", auth.getName(), id);
+        return service.getPaymentDetails(id, auth.getName());
+    }
+
+    @GetMapping("/{id}/receipt")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public PaymentReceiptDTO getReceipt(
+            @PathVariable Long id,
+            Authentication auth
+    ) {
+        log.info("User {} generating receipt for request {}", auth.getName(), id);
+        return receiptService.generateReceipt(id, auth.getName());
+    }
+
+    @PatchMapping("/{id}/paid-status")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ServiceRequestResponseDTO updatePaidStatus(
+            @PathVariable Long id,
+            @RequestParam Boolean paid,
+            Authentication auth
+    ) {
+        log.info("User {} updating paid status of request {} to {}", auth.getName(), id, paid);
+        return service.updatePaidStatus(id, paid);
     }
 
 

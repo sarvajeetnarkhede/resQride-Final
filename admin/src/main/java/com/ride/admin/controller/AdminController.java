@@ -26,6 +26,11 @@ public class AdminController {
         return mechanicClient.available();
     }
 
+    @GetMapping("/mechanics/all")
+    public Object allMechanics() {
+        return mechanicClient.allMechanics();
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/assign")
     public void assign(

@@ -38,4 +38,9 @@ public class FeedbackController {
     public Object byRequest(@PathVariable Long id) {
         return service.byRequest(id);
     }
+
+    @GetMapping("/mechanic/{id}/rating")
+    public Double getAverageRating(@PathVariable Long id) {
+        return service.getAverageRatingForMechanic(id);
+    }
 }
