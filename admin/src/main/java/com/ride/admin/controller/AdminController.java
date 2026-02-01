@@ -26,6 +26,22 @@ public class AdminController {
         return mechanicClient.available();
     }
 
+    @GetMapping("/mechanics/available/skill/{skill}")
+public Object getMechanicsBySkill(@PathVariable String skill) {
+    return mechanicClient.getMechanicsBySkill(skill);
+}
+
+@GetMapping("/mechanics/skills")
+public String[] getAllSkills() {
+    return new String[]{
+        "GENERAL_MECHANIC",
+        "TOWING", 
+        "TIRE_SPECIALIST",
+        "BATTERY_EXPERT",
+        "LOCKSMITH"
+    };
+}
+
     @GetMapping("/mechanics/all")
     public Object allMechanics() {
         return mechanicClient.allMechanics();

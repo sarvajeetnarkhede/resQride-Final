@@ -7,6 +7,7 @@ import com.ride.mechanic.repository.MechanicRepository;
 import com.ride.mechanic.client.ServiceRequestClient;
 import com.ride.mechanic.client.UserServiceClient;
 import com.ride.mechanic.client.FeedbackClient;
+import com.ride.mechanic.util.SkillMapper;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -157,5 +158,13 @@ public class MechanicService {
                 .availability(m.getAvailability())
                 .verified(m.isVerified())
                 .build();
+    }
+
+    public List<MechanicResponseDTO> availableBySkill(String skill) {
+        return repository
+                .findByAvailabilityAndVerifiedTrueAndSkillType(AvailabilityStatus.AVAILABLE, skill)
+                .stream()
+                .map(this::map)
+                .toList();
     }
 }

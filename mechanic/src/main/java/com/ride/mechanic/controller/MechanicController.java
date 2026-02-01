@@ -43,6 +43,16 @@ public class MechanicController {
         return service.available();
     }
 
+    @GetMapping("/available/skill/{skill}")
+    public List<MechanicResponseDTO> availableBySkill(@PathVariable String skill) {
+        return service.availableBySkill(skill);
+    }
+
+    @GetMapping("/skills")
+    public String[] getAllSkills() {
+        return com.ride.mechanic.util.SkillMapper.getAllSkillTypes();
+    }
+
     @GetMapping("/all")
     public List<MechanicResponseDTO> getAllMechanics() {
         return service.getAllMechanics();

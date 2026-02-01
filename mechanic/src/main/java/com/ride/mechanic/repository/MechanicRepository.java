@@ -14,4 +14,9 @@ public interface MechanicRepository extends JpaRepository<Mechanic, Long> {
     List<Mechanic> findByAvailabilityAndVerifiedTrue(
             AvailabilityStatus availability
     );
+
+    List<Mechanic> findByAvailabilityAndVerifiedTrueAndSkillType(
+            AvailabilityStatus availability,
+            String skillType
+    );
 }

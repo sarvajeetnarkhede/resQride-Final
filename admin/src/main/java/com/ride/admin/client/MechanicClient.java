@@ -21,6 +21,15 @@ public class MechanicClient {
                 .block();
     }
 
+    public Object getMechanicsBySkill(String skill) {
+        return webClient.build()
+                .get()
+                .uri(SERVICE + "/api/mechanics/available/skill/{skill}", skill)
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
+    }
+
     public Object allMechanics() {
         return webClient.build()
                 .get()
