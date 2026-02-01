@@ -157,6 +157,9 @@ public class MechanicService {
                 .rating(overallRating) // Use overall rating from feedback service
                 .availability(m.getAvailability())
                 .verified(m.isVerified())
+                .latitude(m.getLatitude())
+                .longitude(m.getLongitude())
+                .address(m.getAddress())
                 .build();
     }
 

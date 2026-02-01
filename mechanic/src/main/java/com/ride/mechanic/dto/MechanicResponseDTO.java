@@ -14,4 +14,9 @@ public class MechanicResponseDTO {
     private Double rating;
     private AvailabilityStatus availability;
     private boolean verified;
+    
+    // Location fields
+    private Double latitude;
+    private Double longitude;
+    private String address;
 }
