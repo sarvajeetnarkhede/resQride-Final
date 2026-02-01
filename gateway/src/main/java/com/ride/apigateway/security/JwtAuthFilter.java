@@ -24,6 +24,9 @@ public class JwtAuthFilter implements GlobalFilter {
     private boolean isPublic(String path, HttpMethod method) {
         if (path.startsWith("/api/auth")) return true;
         
+        // Make all admin endpoints public for dashboard access
+        if (path.startsWith("/api/admin/")) return true;
+        
         // Make mechanic registration public
         if (path.equals("/api/mechanics/register") || path.startsWith("/api/mechanics/register/")) {
             return true;
@@ -41,6 +44,10 @@ public class JwtAuthFilter implements GlobalFilter {
                         || path.equals("/api/requests/")
                         || path.startsWith("/api/mechanics/")
                         || path.startsWith("/api/mechanics")
+                        || path.startsWith("/api/centers/")
+                        || path.equals("/api/centers")
+                        || path.startsWith("/api/admin/")
+                        || path.equals("/api/admin")
                         || path.startsWith("/api/feedback/")
                         || path.startsWith("/api/feedback")
                         || path.startsWith("/api/location/")

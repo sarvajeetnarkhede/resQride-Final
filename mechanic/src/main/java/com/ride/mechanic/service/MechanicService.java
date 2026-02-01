@@ -2,7 +2,9 @@ package com.ride.mechanic.service;
 
 import lombok.RequiredArgsConstructor;
 import com.ride.mechanic.dto.*;
+import com.ride.mechanic.entity.Center;
 import com.ride.mechanic.entity.Mechanic;
+import com.ride.mechanic.repository.CenterRepository;
 import com.ride.mechanic.repository.MechanicRepository;
 import com.ride.mechanic.client.ServiceRequestClient;
 import com.ride.mechanic.client.UserServiceClient;
@@ -18,9 +20,12 @@ import java.util.List;
 public class MechanicService {
 
     private final MechanicRepository repository;
+    private final CenterRepository centerRepository;
     private final ServiceRequestClient serviceRequestClient;
     private final UserServiceClient userServiceClient;
     private final FeedbackClient feedbackClient;
+    private final DistanceService distanceService;
+    private final CenterService centerService;
 
     public Mono<MechanicResponseDTO> register(MechanicCreateDTO dto) {
 
@@ -141,8 +146,11 @@ public class MechanicService {
         Double overallRating = 0.0;
         
         try {
-            // Fetch overall rating from feedback service
-            overallRating = feedbackClient.getAverageRating(m.getId()).block();
+            // Fetch overall rating from feedback service with timeout
+            overallRating = feedbackClient.getAverageRating(m.getId())
+                    .timeout(java.time.Duration.ofSeconds(3))
+                    .onErrorReturn(m.getRating())
+                    .block();
         } catch (Exception e) {
             // Fallback to existing rating if feedback service is unavailable
             overallRating = m.getRating();
@@ -157,9 +165,8 @@ public class MechanicService {
                 .rating(overallRating) // Use overall rating from feedback service
                 .availability(m.getAvailability())
                 .verified(m.isVerified())
-                .latitude(m.getLatitude())
-                .longitude(m.getLongitude())
-                .address(m.getAddress())
+                .assignedCenter(m.getAssignedCenter() != null ? 
+                    mapCenterToDTO(m.getAssignedCenter()) : null)
                 .build();
     }
 
@@ -169,5 +176,141 @@ public class MechanicService {
                 .stream()
                 .map(this::map)
                 .toList();
+    }
+
+    /**
+     * Get available mechanics by skill and calculate distance from user location
+     * @param skill Mechanic skill type
+     * @param userLatitude User's latitude
+     * @param userLongitude User's longitude
+     * @return List of mechanics with distance information, sorted by distance
+     */
+    public List<MechanicResponseDTO> availableBySkillWithDistance(String skill, Double userLatitude, Double userLongitude) {
+        List<MechanicResponseDTO> mechanics = repository
+                .findByAvailabilityAndVerifiedTrueAndSkillType(AvailabilityStatus.AVAILABLE, skill)
+                .stream()
+                .map(this::map)
+                .toList();
+        
+        return distanceService.addDistanceToMechanics(mechanics, userLatitude, userLongitude);
+    }
+
+    /**
+     * Get all available mechanics with distance from user location
+     * @param userLatitude User's latitude
+     * @param userLongitude User's longitude
+     * @return List of mechanics with distance information, sorted by distance
+     */
+    public List<MechanicResponseDTO> availableWithDistance(Double userLatitude, Double userLongitude) {
+        List<MechanicResponseDTO> mechanics = repository
+                .findByAvailabilityAndVerifiedTrue(AvailabilityStatus.AVAILABLE)
+                .stream()
+                .map(this::map)
+                .toList();
+        
+        return distanceService.addDistanceToMechanics(mechanics, userLatitude, userLongitude);
+    }
+
+    /**
+     * Get nearest mechanics within a specific radius
+     * @param userLatitude User's latitude
+     * @param userLongitude User's longitude
+     * @param maxDistance Maximum distance in km
+     * @return List of mechanics within the specified radius
+     */
+    public List<MechanicResponseDTO> nearestMechanics(Double userLatitude, Double userLongitude, Double maxDistance) {
+        List<MechanicResponseDTO> mechanics = availableWithDistance(userLatitude, userLongitude);
+        
+        if (maxDistance != null) {
+            return distanceService.filterByDistance(mechanics, maxDistance);
+        }
+        
+        return mechanics;
+    }
+
+    /**
+     * Note: Individual location tracking removed
+     * Mechanics now operate from their assigned center location
+     * Use center-based distance calculation methods instead
+     */
+
+    /**
+     * Assign mechanic to a center
+     * @param email Mechanic's email
+     * @param centerId Center ID
+     */
+    public void assignToCenter(String email, Long centerId) {
+        Mechanic mechanic = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Mechanic not found"));
+        
+        Center center = centerRepository.findById(centerId)
+                .orElseThrow(() -> new RuntimeException("Center not found"));
+        
+        // Check if center has available slot for this skill type
+        if (!centerService.hasAvailableSlot(centerId, mechanic.getSkillType())) {
+            throw new RuntimeException("Center has no available slot for skill type: " + mechanic.getSkillType());
+        }
+        
+        mechanic.setAssignedCenter(center);
+        repository.save(mechanic);
+    }
+
+    /**
+     * Get available mechanics by skill with center-based distance calculation
+     * @param skill Mechanic skill type
+     * @param userLatitude User's latitude
+     * @param userLongitude User's longitude
+     * @return List of mechanics with distance information, sorted by distance
+     */
+    public List<MechanicResponseDTO> availableBySkillWithCenterDistance(String skill, Double userLatitude, Double userLongitude) {
+        List<MechanicResponseDTO> mechanics = repository
+                .findByAvailabilityAndVerifiedTrueAndSkillType(AvailabilityStatus.AVAILABLE, skill)
+                .stream()
+                .map(this::map)
+                .toList();
+        
+        // Use center location for distance calculation
+        return distanceService.addDistanceToMechanicsWithCenterLocation(mechanics, userLatitude, userLongitude);
+    }
+
+    /**
+     * Get nearest mechanics by center location
+     * @param userLatitude User's latitude
+     * @param userLongitude User's longitude
+     * @param maxDistance Maximum distance in km
+     * @return List of mechanics within the specified radius
+     */
+    public List<MechanicResponseDTO> nearestMechanicsByCenter(Double userLatitude, Double userLongitude, Double maxDistance) {
+        List<MechanicResponseDTO> mechanics = repository
+                .findByAvailabilityAndVerifiedTrue(AvailabilityStatus.AVAILABLE)
+                .stream()
+                .map(this::map)
+                .toList();
+        
+        // Use center location for distance calculation
+        List<MechanicResponseDTO> mechanicsWithDistance = 
+            distanceService.addDistanceToMechanicsWithCenterLocation(mechanics, userLatitude, userLongitude);
+        
+        if (maxDistance != null) {
+            return distanceService.filterByDistance(mechanicsWithDistance, maxDistance);
+        }
+        
+        return mechanicsWithDistance;
+    }
+
+    private CenterDTO mapCenterToDTO(Center center) {
+        return CenterDTO.builder()
+                .id(center.getId())
+                .name(center.getName())
+                .address(center.getAddress())
+                .latitude(center.getLatitude())
+                .longitude(center.getLongitude())
+                .city(center.getCity())
+                .state(center.getState())
+                .contactPhone(center.getContactPhone())
+                .contactEmail(center.getContactEmail())
+                .status(center.getStatus())
+                .maxMechanicsPerSkill(center.getMaxMechanicsPerSkill())
+                .build();
     }
 }

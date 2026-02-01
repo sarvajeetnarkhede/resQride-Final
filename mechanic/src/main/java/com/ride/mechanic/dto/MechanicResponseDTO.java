@@ -15,8 +15,9 @@ public class MechanicResponseDTO {
     private AvailabilityStatus availability;
     private boolean verified;
     
-    // Location fields
-    private Double latitude;
-    private Double longitude;
-    private String address;
+    // Center assignment
+    private CenterDTO assignedCenter;
+    
+    // Distance from user location to mechanic's center (in km)
+    private Double distance;
 }

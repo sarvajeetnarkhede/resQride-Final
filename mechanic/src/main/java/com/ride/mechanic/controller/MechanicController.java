@@ -48,6 +48,46 @@ public class MechanicController {
         return service.availableBySkill(skill);
     }
 
+    @GetMapping("/available/skill/{skill}/nearest")
+    public List<MechanicResponseDTO> availableBySkillWithDistance(
+            @PathVariable String skill,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude) {
+        return service.availableBySkillWithDistance(skill, latitude, longitude);
+    }
+
+    @GetMapping("/available/nearest")
+    public List<MechanicResponseDTO> availableWithDistance(
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double maxDistance) {
+        return service.nearestMechanics(latitude, longitude, maxDistance);
+    }
+
+    @GetMapping("/available/nearest/by-center")
+    public List<MechanicResponseDTO> availableWithCenterDistance(
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double maxDistance) {
+        return service.nearestMechanicsByCenter(latitude, longitude, maxDistance);
+    }
+
+    @GetMapping("/available/skill/{skill}/nearest/by-center")
+    public List<MechanicResponseDTO> availableBySkillWithCenterDistance(
+            @PathVariable String skill,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude) {
+        return service.availableBySkillWithCenterDistance(skill, latitude, longitude);
+    }
+
+    @PatchMapping("/assign-center")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void assignToCenter(
+            @RequestParam String email,
+            @RequestParam Long centerId) {
+        service.assignToCenter(email, centerId);
+    }
+
     @GetMapping("/skills")
     public String[] getAllSkills() {
         return com.ride.mechanic.util.SkillMapper.getAllSkillTypes();

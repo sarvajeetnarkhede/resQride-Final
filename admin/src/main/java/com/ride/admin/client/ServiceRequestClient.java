@@ -3,6 +3,8 @@ package com.ride.admin.client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +20,8 @@ public class ServiceRequestClient {
                 .uri(SERVICE + "/api/requests")
                 .retrieve()
                 .bodyToMono(Object.class)
+                .timeout(Duration.ofSeconds(3))
+                .onErrorResume(e -> Mono.just(java.util.List.of()))
                 .block();
     }
 
@@ -28,6 +32,8 @@ public class ServiceRequestClient {
                         requestId, mechanicId)
                 .retrieve()
                 .toBodilessEntity()
+                .timeout(Duration.ofSeconds(3))
+                .onErrorResume(e -> Mono.empty())
                 .block();
     }
 }

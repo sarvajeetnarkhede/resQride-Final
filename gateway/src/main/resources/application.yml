@@ -33,6 +33,11 @@ spring:
               predicates:
                 - Path=/api/mechanics/**
 
+            - id: MECHANIC-CENTERS-SERVICE
+              uri: lb://MECHANIC-SERVICE
+              predicates:
+                - Path=/api/centers/**
+
             - id: ADMIN-SERVICE
               uri: lb://ADMIN-SERVICE
               predicates:

@@ -32,10 +32,11 @@ public class Mechanic {
 
     private boolean verified;
 
-    // Location fields
-    private Double latitude;
+    // Center assignment
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "center_id")
+    private Center assignedCenter;
 
-    private Double longitude;
-
-    private String address;
+    // Note: Individual location fields removed - service location is now center-based
+    // Mechanics operate from their assigned center location
 }
