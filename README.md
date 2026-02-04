@@ -56,7 +56,7 @@ flowchart TB
         MongoDB[("MongoDB")]
         Redis[("Redis Cache")]
   end
- sublog FILES["Log Files"]
+ subgraph FILES["Log Files"]
     direction TB
         LogFiles[("Daily Logs")]
   end
