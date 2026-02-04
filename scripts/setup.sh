@@ -8,7 +8,7 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT" || exit 1
 
 echo "=============================================================="
-echo " 🛍️  ShopVerse – FAST HYBRID START (SMART REBUILD)"
+echo " 🛠️  resQride – Roadside Assistance Platform Setup"
 echo "=============================================================="
 echo ""
 
@@ -21,7 +21,7 @@ wait_for_health () {
   local URL=$2
 
   for i in {1..120}; do
-    if curl -s "$URL" | grep -q '"status":"UP"'; then
+    if curl -s "$URL" | grep -q '"status":"UP"' || curl -s "$URL" | grep -q '"status":"healthy"'; then
       echo "✅ $NAME → RUNNING"
       return 0
     fi
@@ -37,14 +37,23 @@ needs_rebuild () {
   local SERVICE_DIR=$1
   local HASH_FILE="$SERVICE_DIR/.build-hash"
 
-  if [ ! -d "$SERVICE_DIR/src" ]; then
+  if [ ! -d "$SERVICE_DIR/src" ] && [ ! -d "$SERVICE_DIR/Controllers" ]; then
     return 1
   fi
 
-  NEW_HASH=$(find "$SERVICE_DIR/src" -type f -print0 \
-    | sort -z \
-    | xargs -0 sha256sum \
-    | sha256sum | awk '{print $1}')
+  # For Java services
+  if [ -d "$SERVICE_DIR/src" ]; then
+    NEW_HASH=$(find "$SERVICE_DIR/src" -type f -print0 \
+      | sort -z \
+      | xargs -0 sha256sum \
+      | sha256sum | awk '{print $1}')
+  # For .NET services
+  elif [ -d "$SERVICE_DIR/Controllers" ]; then
+    NEW_HASH=$(find "$SERVICE_DIR" -name "*.cs" -o -name "*.csproj" -o -name "*.json" -type f -print0 \
+      | sort -z \
+      | xargs -0 sha256sum \
+      | sha256sum | awk '{print $1}')
+  fi
 
   if [ -f "$HASH_FILE" ]; then
     OLD_HASH=$(cat "$HASH_FILE")
@@ -62,7 +71,7 @@ needs_rebuild () {
 
 # ---------------- Start Docker infra ----------------
 echo "🐳 Starting Docker infrastructure..."
-docker compose up -d kafka zookeeper mysql redis mongodb grafana prometheus zipkin >/dev/null 2>&1
+docker compose up -d kafka zookeeper mysql redis mongodb postgres >/dev/null 2>&1
 sleep 5
 
 echo "✅ Docker infrastructure ready"
@@ -108,18 +117,44 @@ echo "🚀 Discovery is UP — starting remaining services in PARALLEL"
 echo ""
 
 # ==============================================================
-# 2️⃣ START OTHER SERVICES (PARALLEL)
+# 2️⃣ START LOGGER SERVICE (.NET)
+# ==============================================================
+LOGGER_NAME="logger-service"
+LOGGER_PORT=9090
+LOGGER_DIR="$ROOT/$LOGGER_NAME"
+
+echo "▶️ Preparing logger-service..."
+
+if needs_rebuild "$LOGGER_DIR"; then
+  echo "🔨 Rebuilding logger-service (changes detected)"
+  cd "$LOGGER_DIR" || exit 1
+  dotnet build -c Release >/dev/null 2>&1
+  cd "$ROOT"
+else
+  echo "✅ logger-service → no changes, using existing build"
+fi
+
+echo "▶️ Starting logger-service..."
+cd "$LOGGER_DIR" || exit 1
+dotnet run -c Release --urls "http://localhost:9090" \
+  > "$LOG_DIR/logger-service.log" 2>&1 &
+cd "$ROOT"
+
+echo "⏳ Waiting for logger-service to be HEALTHY..."
+wait_for_health "logger-service" "http://localhost:$LOGGER_PORT/api/logger/health"
+
+# ==============================================================
+# 3️⃣ START OTHER SERVICES (PARALLEL)
 # ==============================================================
 SERVICES=(
   "auth-service:8081"
   "user:8082"
-  "product:8083"
-  "order-Service:8084"
+  "service-request:8083"
+  "mechanic:8084"
   "payment-service:8085"
-  "notification:8086"
-  "analytics:8087"
-  "recommendation:8088"
-  "admin-server:8079"
+  "location:8086"
+  "feedback:8087"
+  "admin:8088"
   "gateway:8080"
 )
 
@@ -180,23 +215,20 @@ echo "=============================================================="
 echo ""
 echo "🔍 Eureka Dashboard : http://localhost:8761"
 echo "🚪 API Gateway      : http://localhost:8080"
+echo "📊 Logger Service   : http://localhost:9090"
 echo ""
-echo "📈 Tool	URL"
-echo "🔍 Prometheus	http://localhost:9090"
-echo "📈 Grafana	http://localhost:3000"
-echo "🔑 Grafana Login	admin / admin"
-echo ""
-echo "   In Grafana → Import Dashboard"
-echo "   Use these IDs:"
-echo "   Purpose Dashboard    ID"
-echo "   Spring Boot	       4701"
-echo "   JVM Metrics	       4701"
-echo "   Kafka	             721"
-echo "   Docker	             893"
-echo ""
+echo "📊 Logger APIs:"
+echo "   Health Check     : http://localhost:9090/api/logger/health"
+echo "   View Logs        : http://localhost:9090/api/logger/logs"
+echo "   Active Services  : http://localhost:9090/api/logger/services"
 echo ""
 echo "📁 Logs directory   : logs/"
-echo "📄 Example          : tail -f logs/gateway.log"
+echo "   API Logs         : logs/YYYY-MM-DD.log"
+echo "   Service Logs     : logs/<service-name>.log"
+echo ""
+echo "📄 Examples:"
+echo "   tail -f logs/gateway.log"
+echo "   tail -f logs/$(date +%Y-%m-%d).log"
 echo ""
 echo "🛑 Stop services    : CTRL + C"
 

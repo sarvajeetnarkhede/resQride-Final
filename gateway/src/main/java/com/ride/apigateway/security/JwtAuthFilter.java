@@ -27,6 +27,11 @@ public class JwtAuthFilter implements GlobalFilter {
         // Make all admin endpoints public for dashboard access
         if (path.startsWith("/api/admin/")) return true;
         
+        // Make Razorpay payment endpoints public
+        if (path.startsWith("/api/payments/create-order") || path.startsWith("/api/payments/verify")) {
+            return true;
+        }
+        
         // Make mechanic registration public
         if (path.equals("/api/mechanics/register") || path.startsWith("/api/mechanics/register/")) {
             return true;

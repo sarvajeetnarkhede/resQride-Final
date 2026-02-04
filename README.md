@@ -1,24 +1,23 @@
-# ShopVerse – Intelligent Event-Driven E-Commerce Platform
+# resQride – Roadside Assistance Platform
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
-[//]: # ([![Build Status]&#40;https://github.com/yourusername/ShopVerse/actions/workflows/build.yml/badge.svg&#41;]&#40;https://github.com/yourusername/ShopVerse/actions&#41;)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 
 ## 🚀 Overview
 
-ShopVerse is a modern, data-driven e-commerce platform built with a microservices architecture. It leverages Spring Boot, Kafka, and React to deliver real-time analytics, personalized recommendations, and automated batch product processing in a scalable, event-driven ecosystem.
+resQride is a comprehensive roadside assistance platform built with a microservices architecture. It connects users in need of vehicle assistance with nearby mechanics and service centers, providing real-time tracking, secure payments, and efficient service management.
 
 ## ✨ Key Features
 
 - **Microservices Architecture**: Independently deployable services with dedicated databases
-- **Event-Driven Design**: Real-time event processing with Apache Kafka
-- **User Authentication**: Secure JWT-based authentication
-- **Product Management**: Bulk product ingestion with real-time job tracking
-- **Payment Processing**: Integrated Razorpay payment gateway
-- **Real-time Analytics**: Live dashboards with business insights
-- **Personalized Recommendations**: AI/ML-powered product suggestions
-- **Notification System**: Real-time user notifications
+- **Real-time Location Services**: GPS-based mechanic and service center discovery
+- **User Authentication**: Secure JWT-based authentication with role-based access
+- **Service Request Management**: Create, track, and manage roadside assistance requests
+- **Mechanic Network**: Registered mechanics with skills, availability, and ratings
+- **Payment Processing**: Integrated Razorpay payment gateway for service fees
+- **Real-time Notifications**: SMS and in-app notifications for request updates
+- **Admin Dashboard**: Comprehensive management interface for operations
+- **Request Logging**: Complete audit trail of all API requests and activities
 - **Containerized Deployment**: Docker and Docker Compose support
 
 ## 🏗️ System Architecture
@@ -32,118 +31,85 @@ flowchart TB
  subgraph CLIENT["Client"]
     direction TB
         Web["Web Client"]
+        Mobile["Mobile App"]
   end
  subgraph GATEWAY["Gateway"]
     direction TB
         API["API Gateway"]
+        Logger["Logger Service"]
   end
  subgraph SERVICES["Services"]
     direction TB
         Auth["Auth Service"]
         User["User Service"]
-        Product["Product Service"]
-        Order["Order Service"]
+        Request["Service Request Service"]
+        Mechanic["Mechanic Service"]
         Payment["Payment Service"]
-  end
- subgraph EVENTBUS["Event Bus"]
-    direction TB
-        Kafka[("Kafka Event Bus")]
-  end
- subgraph CONSUMERS["Events Consumer"]
-    direction TB
-        Analytics["Analytics Service"]
-        Notification["Notification Service"]
-        Recommendation["Recommendation Service"]
+        Location["Location Service"]
+        Feedback["Feedback Service"]
+        Admin["Admin Service"]
   end
  subgraph DATASTORES["Data Store"]
     direction TB
         MySQL[("MySQL")]
         PostgreSQL[("PostgreSQL")]
         MongoDB[("MongoDB")]
-        ClickHouse[("ClickHouse")]
         Redis[("Redis Cache")]
   end
- subgraph OBSERVABILITY["Observability"]
+ sublog FILES["Log Files"]
     direction TB
-        Prometheus["Prometheus"]
-        Grafana["Grafana"]
-        AdminServer["Spring Boot Admin"]
+        LogFiles[("Daily Logs")]
   end
     CLIENT --> GATEWAY
     GATEWAY --> SERVICES
-    SERVICES --> EVENTBUS
-    EVENTBUS --> CONSUMERS
+    GATEWAY --> Logger
+    Logger --> LogFiles
     User -- MySQL --> MySQL
     Auth -- MySQL --> MySQL
-    Product -- MySQL --> MySQL
-    Order -- MySQL --> MySQL
+    Request -- PostgreSQL --> PostgreSQL
+    Mechanic -- MySQL --> MySQL
     Payment -- PostgreSQL --> PostgreSQL
-    Notification -- MongoDB --> MongoDB
-    Recommendation -- MongoDB --> MongoDB
-    Analytics -- ClickHouse --> ClickHouse
-    Recommendation -- Cache --> Redis
+    Feedback -- MongoDB --> MongoDB
+    Location -- Cache --> Redis
     API -- RateLimit/TokenCache --> Redis
-    Kafka -- Offset/Cache --> Redis
-    OBSERVABILITY -.-> GATEWAY & SERVICES & EVENTBUS & CONSUMERS & DATASTORES
 
      Web:::client
+     Mobile:::client
      API:::gateway
+     Logger:::gateway
      Auth:::service
      User:::service
-     Product:::service
-     Order:::service
+     Request:::service
+     Mechanic:::service
      Payment:::service
-     Kafka:::eventbus
-     Analytics:::consumer
-     Notification:::consumer
-     Recommendation:::consumer
+     Location:::service
+     Feedback:::service
+     Admin:::service
      MySQL:::database
-     PostgreSQL:::client
+     PostgreSQL:::database
      MongoDB:::database
-     ClickHouse:::database
      Redis:::database
-     Prometheus:::monitor
-     Grafana:::monitor
-     AdminServer:::monitor
+     LogFiles:::files
     classDef gateway fill:#388e3c,stroke:#1b5e20,stroke-width:2px,color:#fff
     classDef service fill:#7e57c2,stroke:#4527a0,stroke-width:2px,color:#fff
-    classDef eventbus fill:#ef6c00,stroke:#e65100,stroke-width:2px,color:#fff
-    classDef consumer fill:#00897b,stroke:#004d40,stroke-width:2px,color:#fff
     classDef database fill:#263238,stroke:#789262,stroke-width:2px,color:#fff
-    classDef monitor fill:#37474F,stroke:#13181b,stroke-width:2px,color:#fff
+    classDef files fill:#ff6f00,stroke:#e65100,stroke-width:2px,color:#fff
     classDef client fill:#1565c0, stroke:#002f6c, stroke-width:2px, color:#fff
     style API fill:#00C853
-    style Kafka stroke:#FFFFFF
+    style Logger fill:#FF6D00
     style MySQL fill:#AA00FF
     style PostgreSQL fill:#2962FF,stroke-width:4px,stroke-dasharray: 0
     style MongoDB fill:#00C853,stroke:#424242
-    style ClickHouse fill:#FFD600,stroke:#424242,color:#000000
     style Redis fill:#D50000,stroke:#FFFFFF,stroke-width:2px,stroke-dasharray: 0
-    style Prometheus fill:#2962FF,stroke:#FFFFFF
-    style Grafana fill:#2962FF,stroke:#FFFFFF
-    style AdminServer fill:#2962FF,stroke:#FFFFFF
+    style LogFiles fill:#FF6D00,stroke:#FFFFFF
     style CLIENT stroke:#1565c0,stroke-width:3px
     style GATEWAY stroke:#388e3c,stroke-width:3px
     style SERVICES stroke:#7e57c2,stroke-width:3px
-    style EVENTBUS stroke:#ef6c00,stroke-width:3px,fill:#FF6D00,color:#FFFFFF
-    style CONSUMERS stroke:#00897b,stroke-width:3px
-    style OBSERVABILITY stroke:#2962FF,stroke-width:3px,fill:#2962FF,color:#FFFFFF
     style DATASTORES stroke:#E1BEE7,stroke-width:3px,fill:transparent,color:#424242
+    style FILES stroke:#ff6f00,stroke-width:3px
     linkStyle 1 stroke:#00C853,fill:none
     linkStyle 2 stroke:#AA00FF,fill:none
     linkStyle 3 stroke:#FF6D00,fill:none
-    linkStyle 4 stroke:#AA00FF,fill:none
-    linkStyle 5 stroke:#AA00FF,fill:none
-    linkStyle 6 stroke:#AA00FF,fill:none
-    linkStyle 7 stroke:#AA00FF,fill:none
-    linkStyle 8 stroke:#AA00FF,fill:none
-    linkStyle 13 stroke:#00C853,fill:none
-    linkStyle 14 stroke:#FF6D00,fill:none
-    linkStyle 15 stroke:#2962FF,fill:none
-    linkStyle 16 stroke:#2962FF,fill:none
-    linkStyle 17 stroke:#2962FF,fill:none
-    linkStyle 18 stroke:#2962FF,fill:none
-    linkStyle 19 stroke:#2962FF,fill:none
 ```
 
 ### Architecture Components
@@ -203,184 +169,102 @@ flowchart TB
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 - Docker & Docker Compose
 - Java 21 or higher
+- .NET 8.0 SDK (for logger service)
 - Git
 
 ### One-Command Setup
-
-1. **Clone and prepare the repository**
-   ```bash
-   git clone https://github.com/yourusername/ShopVerse.git
-   cd ShopVerse-Backend
-   ```
-
-2. **Run the setup script**
-   ```bash
-   # Make the script executable
-   chmod +x scripts/setup.sh
-   
-   # Run the setup script
-   ./scripts/setup.sh
-   ```
-
-   The setup script will automatically:
-   - Start all required infrastructure (Kafka, ClickHouse, PostgreSQL, MySQL, Redis, MongoDB)
-   - Build all microservices
-   - Start services in the correct order with proper health checks
-   - Display the status of all services
-
-3. **Access the applications**
-   - API Gateway: http://localhost:8080
-   - Eureka Dashboard: http://localhost:8761
-   - Admin Dashboard: http://localhost:8080/admin
-
-### Manual Setup (Alternative)
-
-If you prefer to run services manually:
-
 ```bash
-# 1. Start infrastructure
-cd ShopVerse-Backend
-docker-compose up -d kafka zookeeper mysql redis mongodb
-
-# 2. Build and start services (in separate terminals)
-cd discovery-service && ./gradlew bootRun
-cd ../gateway && ./gradlew bootRun
-# Repeat for other services...
+git clone <repository-url>
+cd resQride-Final
+chmod +x scripts/setup.sh
+./scripts/setup.sh
 ```
+
+### Access Points
+- API Gateway: http://localhost:8080
+- Logger Service: http://localhost:9090
+- Eureka Dashboard: http://localhost:8761
+- Admin Dashboard: http://localhost:8080/admin
 
 ## 🛠️ Available Services
 
-| Service                    | Port | Description                             |
-|----------------------------|------|-----------------------------------------|
-| **api-gateway**            | 8080 | API Gateway (Spring Cloud Gateway)      |
-| **discovery-service**      | 8761 | Service Registry (Eureka)               |
-| **admin-server**           | 8079 | Spring Boot Admin (Monitering) |
-| **auth-service**           | 8081 | Authentication & Authorization          |
-| **user-service**           | 8082 | User Management                         |
-| **product-service**        | 8083 | Product Catalog                         |
-| **order-service**          | 8084 | Order Processing                        |
-| **payment-service**        | 8085 | Payment Processing                      |
-| **notification-service**   | 8086 | Real-time Notifications                 |
-| **analytics-service**      | 8087 | Business Analytics                      |
-| **recommendation-service** | 8088 | Product Recommendations                 |
+| Service | Port | Technology | Description |
+|---------|------|------------|-------------|
+| api-gateway | 8080 | Spring Boot | API Gateway & Routing |
+| discovery-service | 8761 | Spring Boot | Service Registry |
+| auth-service | 8081 | Spring Boot | Authentication |
+| user-service | 8082 | Spring Boot | User Management |
+| service-request | 8083 | Spring Boot | Service Requests |
+| mechanic-service | 8084 | Spring Boot | Mechanic Network |
+| payment-service | 8085 | Spring Boot | Payment Processing |
+| location-service | 8086 | Spring Boot | Location Services |
+| feedback-service | 8087 | Spring Boot | Feedback & Ratings |
+| admin-service | 8088 | Spring Boot | Admin Operations |
+| logger-service | 9090 | .NET 8 | API Request Logging |
+
+## 📊 Logger Service
+
+### Features
+- Real-time API request logging
+- Timestamp tracking
+- Response time monitoring
+- User attribution
+- Request ID tracking
+
+### API Endpoints
+- `GET /api/logger/health` - Health check
+- `GET /api/logger/logs` - View logs
+- `GET /api/logger/services` - Active services
+
+### Log Format
+```
+[2026-02-02 17:38:53.584] GET /api/mechanics/centers - 200 - gateway - 192.168.1.100 - Mozilla/5.0... - 150ms - User:user@example.com - Req:a1b2c3d4
+```
 
 ## 🔧 Troubleshooting
 
 ### Common Issues
-
-1. **Port conflicts**
-   - Ensure no other services are running on the required ports (8080, 8761, etc.)
-   - Check running containers: `docker ps`
-
-2. **Setup script fails**
-   - Make sure Docker is running
-   - Check available disk space
-   - Increase Docker memory allocation if needed
-   - View logs in `logs/` directory
-
-3. **Service not starting**
-   - Check service logs in `logs/service-name.log`
-   - Verify database connection
-   - Ensure Kafka is running: `docker-compose ps kafka`
+1. **Port conflicts** - Check `docker ps`
+2. **Logger service** - Test: `curl http://localhost:9090/api/logger/health`
+3. **Gateway logging** - Check connectivity between gateway and logger
 
 ### Logs
-
-View logs for all services in the `logs/` directory:
-
 ```bash
-# View logs for a specific service
-tail -f logs/gateway.log
+# View API logs
+tail -f logs/$(date +%Y-%m-%d).log
 
-# View all logs
-tail -f logs/*.log
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-The application is pre-configured with sensible defaults. To customize, create a `.env` file in the root directory:
-
-```env
-# Database (MySQL)
-MYSQL_ROOT_PASSWORD=rootpass
-MYSQL_DATABASE=shopverse
-MYSQL_USER=shopuser
-MYSQL_PASSWORD=shoppass
-
-# JWT Authentication
-JWT_SECRET=change_this_to_a_secure_secret
-JWT_EXPIRATION=86400000  # 24 hours
-
-# Kafka
-KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-
-# Redis
-REDIS_HOST=redis
-REDIS_PORT=6379
-
-# MongoDB
-MONGO_URI=mongodb://mongodb:27017/shopverse
-
-# Razorpay (for payment-service)
-RAZORPAY_KEY_ID=your_razorpay_key
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-```
-
-> **Note**: The setup script will automatically create this file with default values if it doesn't exist.
-
-## 🧪 Testing
-
-Run tests for all services:
-
-```bash
-# Run tests for all services
-./gradlew test
-
-# Run tests for a specific service
-cd <service-directory>
-./gradlew test
+# View service logs
+docker logs <service-name>
 ```
 
 ## 🐳 Docker Deployment
-
-Build and run the entire application stack:
-
 ```bash
+# Start all services
 docker-compose up -d --build
+
+# Start specific services
+docker-compose up -d logger-service gateway
 ```
 
 ## 📈 Monitoring
-
-- **Spring Boot Actuator**: http://localhost:8080/actuator
-- **Spring Boot Admin**: http://localhost:8079
-- **Prometheus**: http://localhost:9090
-- **Grafana**: http://localhost:3000 (default: admin/admin)
+- Logger Health: http://localhost:9090/api/logger/health
+- API Gateway: http://localhost:8080/actuator/health
+- Service Registry: http://localhost:8761
 
 ## 🤝 Contributing
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Open Pull Request
 
 ## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Spring Boot Team
-- Apache Kafka
-- Docker Community
-- All open-source contributors
+MIT License - see [LICENSE](LICENSE) file
 
 ---
 
 <div align="center">
-  Made with ❤️ by ShopVerse Team | 2025-26
+  Made with ❤️ by resQride Team | 2025-26
 </div>

@@ -31,4 +31,11 @@ public class Payment {
     private PaymentStatus status;
 
     private LocalDateTime createdAt;
+
+    // Razorpay specific fields
+    private String razorpayOrderId;
+    
+    private String razorpayPaymentId;
+    
+    private String razorpaySignature;
 }

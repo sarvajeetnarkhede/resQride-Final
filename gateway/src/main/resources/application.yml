@@ -58,6 +58,11 @@ spring:
               predicates:
                 - Path=/api/payments/**
 
+            - id: LOGGER-SERVICE
+              uri: http://localhost:9090
+              predicates:
+                - Path=/api/logger/**
+
 
           default-filters:
             PreserveHostHeader

@@ -114,6 +114,26 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
+  # ================= LOGGER SERVICE =================
+  logger-service:
+    build: ./logger-service
+    container_name: logger-service
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - microservices_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/logger/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 networks:
   microservices_network:
     driver: bridge

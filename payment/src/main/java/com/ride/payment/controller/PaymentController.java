@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
@@ -19,5 +21,15 @@ public class PaymentController {
             @RequestBody PaymentCreateDTO dto
     ) {
         return service.pay(auth.getName(), dto);
+    }
+
+    @PostMapping("/create-order")
+    public Map<String, Object> createOrder(@RequestBody PaymentInitRequest request) {
+        return service.createOrder(request);
+    }
+
+    @PostMapping("/verify")
+    public void verifyPayment(@RequestBody PaymentVerifyRequest request) {
+        service.verifyPayment(request);
     }
 }

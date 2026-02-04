@@ -37,6 +37,11 @@ eureka:
   instance:
     prefer-ip-address: true
 
+# 💳 Razorpay Payment Gateway Configuration
+razorpay:
+  key: ${RAZORPAY_KEY}
+  secret: ${RAZORPAY_SECRET}
+
 management:
   endpoints:
     web:
